@@ -1,11 +1,20 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/"></router-link>
-      <router-link to="/about"></router-link>
-    </div>
     <router-view />
+    <div id="nav">
+      <main-tabbar></main-tabbar>
+    </div>
   </div>
 </template>
-
-<style></style>
+<script>
+import MainTabbar from "components/content/MainTabbar";
+export default {
+  name: "App",
+  components: {
+    MainTabbar,
+  },
+};
+</script>
+<style>
+@import "./assets/css/base.css";
+</style>
