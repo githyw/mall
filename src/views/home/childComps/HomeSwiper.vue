@@ -1,16 +1,15 @@
 <template>
-  <swiper>
-    <swiper-item v-for="item in banners" :key="item.id">
-      <a :href="item.link">
-        <img :src="item.image" alt="" @load="imageLoad" />
-      </a>
-    </swiper-item>
-  </swiper>
+  <van-swipe class="detail-swiper" :autoplay="3000" indicator-color="white">
+    <van-swipe-item v-for="item in banners" :key="item.id" class="detail-swiper-item">
+      <img :src="item.image" alt="" @load="imageLoad" />
+    </van-swipe-item>
+  </van-swipe>
+
+
 </template>
 
 <script>
-import { Swiper, SwiperItem } from "components/common/swiper/index";
-
+  import { Swipe, SwipeItem } from 'vant';
 export default {
   name: "HomeSwiper",
   props: {
@@ -27,8 +26,8 @@ export default {
     }
   },
   components: {
-    Swiper,
-    SwiperItem,
+    Swipe,
+    SwipeItem,
   },
   methods: {
     imageLoad() {
@@ -43,4 +42,11 @@ export default {
 </script>
 
 <style scoped>
+  .detail-swiper{
+    height: 200px;
+    overflow: hidden;
+  }
+  .detail-swiper-item img{
+    width: 100%;
+  }
 </style>
