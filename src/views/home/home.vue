@@ -1,20 +1,36 @@
 <template>
   <div id="home">
-    <nav-bar class="nav"> <div slot="center">购物街</div></nav-bar>
+    <nav-bar class="nav">
+      <div slot="center">购物街</div>
+    </nav-bar>
+    <tab-control
+      :titles="['流行', '新品', '精选']"
+      @tabClick="tabClick"
+      class="TabControl"
+      ref="tabControl1"
+      v-show="isTabFixed"
+    />
     <scroll
       class="content"
       ref="scroll"
-      :probe-type="3"
+      :probeType="2"
       :pullUpLoad="true"
       @pullingUp="loadMore"
       @scroll="contentScroll"
     >
-      <home-swiper :banners="banners"></home-swiper>
+      <home-swiper
+        :banners="banners"
+        @swiperImageLoad="swiperImageLoad"
+      ></home-swiper>
       <hyw-recommend :recommend="recommend"></hyw-recommend>
       <recommend />
-      <tab-control :titles="['流行', '新品', '精选']" @tabClick="tabClick" />
-      <goods-list :goods="showGoods"
-    /></scroll>
+      <tab-control
+        :titles="['流行', '新品', '精选']"
+        @tabClick="tabClick"
+        ref="tabControl"
+      />
+      <goods-list :goods="showGoods" />
+    </scroll>
     <back-top @click.native="backClick" v-show="isShowBackTop" />
   </div>
 </template>
@@ -30,7 +46,8 @@ import TabControl from "components/content/TabControl";
 import GoodsList from "components/content/goods/GoodsList";
 import BackTop from "components/content/BackTop/BackTop";
 
-import { getHomeMultidata, getHomeGoods } from "network/home";
+import { getHomeGoods, getHomeMultidata } from "network/home";
+
 export default {
   name: "home",
   data() {
@@ -44,6 +61,8 @@ export default {
       },
       currentType: "pop",
       isShowBackTop: false,
+      isTabOffsetTop: 0,
+      isTabFixed: false,
     };
   },
   components: {
@@ -72,18 +91,31 @@ export default {
     //3.监听item中图片加载完成
   },
   mounted() {
-    const refresh = this.debounce(this.$refs.scroll.refresh, 100);
+    //调用防抖函数
+    const refresh = this.debounce(this.$refs.scroll.refresh);
     this.$bus.$on("itemImageLoad", () => {
       refresh();
     });
+  },
+  activated() {
+    // console.log("activater");
+    this.$refs.scroll.scrollTo(0, this.saveY, 0);
+    // this.$refs.scroll.refresh();
+  },
+  deactivated() {
+    // console.log("deactivated");
+    // console.log(this.$refs.scroll.getScrollY());
+    this.saveY = this.$refs.scroll.getScrollY();
   },
   methods: {
     /**
      * 事件监听相关的方法
      */
+    //防抖 封装debounce函数，作用是不会频繁调用，如果下一次执行来的非常快，那么会将上一次取消掉
     debounce(func, delay) {
       let timer = null;
       return function (...args) {
+        //timer有值   取消掉timer
         if (timer) clearTimeout(timer);
         timer = setTimeout(() => {
           func.apply(this, args);
@@ -91,6 +123,9 @@ export default {
       };
     },
     tabClick(index) {
+      this.$refs.tabControl.crrentIndex = index;
+      this.$refs.tabControl1.crrentIndex = index;
+
       switch (index) {
         case 0:
           this.currentType = "pop";
@@ -100,26 +135,30 @@ export default {
           return;
         case 2:
           this.currentType = "sell";
+          return;
       }
     },
     //返回顶部
     backClick() {
-      this.$refs.scroll.scrollTo(0, 0);
+      this.$refs.scroll.scrollTo(0, 0,1000);
     },
-    //显示与隐藏返回顶部按钮
+    //监听滚动事件
     contentScroll(position) {
-      // console.log(position);
-      this.isShowBackTop = -position.y > 1000;
+      //监听返回顶部按钮的显示与隐藏
+      this.isShowBackTop =( -position.y) > 1000;
+      this.isTabFixed =( -position.y) > this.isTabOffsetTop;
     },
     loadMore() {
       this.getHomeGoods(this.currentType);
+    },
+    swiperImageLoad() {
+      this.isTabOffsetTop = this.$refs.tabControl.$el.offsetTop;
     },
     /**
      * 网络请求相关方法
      */
     getHomeMultidata() {
       getHomeMultidata().then((res) => {
-        console.log(res);
         this.banners = res.data.banner.list;
         this.recommend = res.data.recommend.list;
       });
@@ -127,7 +166,6 @@ export default {
     getHomeGoods(type) {
       const page = this.goods[type].page + 1;
       getHomeGoods(type, page).then((res) => {
-        // console.log(res);
         this.goods[type].list.push(...res.data.list);
         this.goods[type].page += 1;
         //调用finishPullUp 添加下一页图片并进行展示
@@ -139,9 +177,6 @@ export default {
 </script>
 
 <style scoped>
-#home {
-  padding-top: 44px;
-}
 .nav {
   background-color: var(--color-tint);
   color: #fff;
@@ -151,6 +186,7 @@ export default {
   right: 0;
   z-index: 9;
 }
+
 .content {
   /* height: 500px; */
   overflow: hidden;
@@ -159,5 +195,10 @@ export default {
   bottom: 49px;
   left: 0;
   right: 0;
+}
+
+.TabControl {
+  position: relative;
+  z-index: 1;
 }
 </style>

@@ -36,7 +36,7 @@ export default {
      * 监听滚动位置
      */
     this.scroll.on("scroll", (position) => {
-      // console.log(a);
+      // console.log(position);
       this.$emit("scroll", position);
     });
     /**
@@ -55,8 +55,11 @@ export default {
       this.scroll && this.scroll.finishPullUp();
     },
     refresh() {
-      console.log("-------");
+      // console.log(this.scroll && this.scroll.refresh());
       this.scroll && this.scroll.refresh();
+    },
+    getScrollY() {
+      return this.scroll ? this.scroll.y : 0;
     },
   },
 };
