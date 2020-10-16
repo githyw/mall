@@ -44,12 +44,21 @@ import Scroll from "components/common/scroll/scroll";
 import NavBar from "components/common/navbar/NavBar";
 import TabControl from "components/content/TabControl";
 import GoodsList from "components/content/goods/GoodsList";
-import BackTop from "components/content/BackTop/BackTop";
 
 import { getHomeGoods, getHomeMultidata } from "network/home";
+/*
+* 1.引入混入，公共的代码写到混入里面 然后引入
+* 2.需要监听滚动事件
+* 3.使用混入代码里面注册的组件
+* 4.给组件监听点击事件和布尔值判断，判断显示和隐藏
+* 5.监听滚动之后设置需要滚动隐藏的位置
+* */
+import { top } from "common/mixin"
 
 export default {
   name: "home",
+  //混入
+  mixins:[top],
   data() {
     return {
       banners: [],
@@ -73,7 +82,6 @@ export default {
     NavBar,
     GoodsList,
     TabControl,
-    BackTop,
   },
   computed: {
     showGoods() {
@@ -125,7 +133,6 @@ export default {
     tabClick(index) {
       this.$refs.tabControl.crrentIndex = index;
       this.$refs.tabControl1.crrentIndex = index;
-
       switch (index) {
         case 0:
           this.currentType = "pop";
@@ -139,9 +146,7 @@ export default {
       }
     },
     //返回顶部
-    backClick() {
-      this.$refs.scroll.scrollTo(0, 0,1000);
-    },
+
     //监听滚动事件
     contentScroll(position) {
       //监听返回顶部按钮的显示与隐藏

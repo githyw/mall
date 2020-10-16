@@ -8,8 +8,8 @@ export function getHomeGoods(type, page) {
   return request({
     url: '/home/data',
     params: {
-      type:'pop',
-      page:1
+      type,
+      page
     }
   })
 }
